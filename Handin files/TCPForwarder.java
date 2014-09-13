@@ -1,71 +1,77 @@
-
 import java.net.*;
 import java.io.*;
+
 public class TCPForwarder {
-	public static void main (String args[]) {
-		try{
-			int P1Port = 7896;
-			
-			InetAddress P2Address = InetAddress.getByName("106.185.40.123");
-			int P2Port = 7;
-			Socket itu = new Socket(P2Address, P2Port);
-			
-			ServerSocket listenSocket = new ServerSocket(P1Port);
-			
-			while(true) {
-				Socket clientSocket = listenSocket.accept();
-//				Socket receiverSocket = new Socket(IPAddress, receiverPort);
-				System.out.println("Socket created");
-				Connection c = new Connection(clientSocket, itu);
-				System.out.println("Connection made");
-				
-				//Connection c2 = new Connection(itu, true);
-			}
-		} catch(IOException e) {System.out.println("Listen :"+e.getMessage());}
-		}
-	}
-	class Connection extends Thread {
-		DataInputStream from_in;
-		DataOutputStream from_out;
-		DataInputStream to_in;
-		DataOutputStream to_out;
-		Socket from;
-		Socket to;
-		
-		public Connection (Socket fromSocket, Socket toSocket) {
-			from = fromSocket;
-			to = toSocket;
-			try {
-				from = fromSocket;
-				to = toSocket;
-				from_in = new DataInputStream( from.getInputStream());
-				from_out =new DataOutputStream( from.getOutputStream());
-				to_in = new DataInputStream( to.getInputStream());
-				to_out =new DataOutputStream( to.getOutputStream());
-				System.out.println("Streams ready");
-				System.out.println("From - Port: "+from.getPort() + ", Local port: "+ to.getLocalPort());
-				System.out.println("To - Port: "+to.getPort() + ", Local port: "+ to.getLocalPort());
-				this.start();
-			} catch(IOException e) {System.out.println("Connection:"+e.getMessage());}
-		}
-		public void run(){
-			try { 
-				String data = from_in.readUTF();
-				System.out.println("Initial message received: "+data);
-				
-				to_out.writeUTF(data); // UTF is a string encoding; see Sec 4.3
-				System.out.println("Sent forwarded message");
-				String data2 = to_in.readUTF();
-				System.out.println("Received ecco of forwarded message: "+ data2);
-				
-				
-			} catch(EOFException e) {System.out.println("EOF:"+e.getMessage());
-			} catch(IOException e) {System.out.println("IO:"+e.getMessage());
-			} finally { try {
-				from.close();
-				to.close();
-				}catch (IOException e){/*close failed*/}
-			
-		}
-	}
+
+    public static void main(String args[]) throws Exception {
+        InetAddress i = InetAddress.getByName("106.185.40.123");
+        forwarder(i, 7895, 7);
+    }
+
+    public static void forwarder(InetAddress i, int p1, int p2) throws Exception {
+        ServerSocket listenSocket = null;
+        try {
+            listenSocket = new ServerSocket(p1);
+            Socket sendSocket = new Socket(i, p2);
+            while (true) {
+                System.out.println("Listening on " + listenSocket.getInetAddress() + ":" + listenSocket.getLocalPort());
+                Socket clientSocket = listenSocket.accept();
+                System.out.println("Accepted connection");
+                new Connection(clientSocket, sendSocket);
+                Thread.sleep(8000);
+            }
+        } finally {
+            if (listenSocket != null) {
+                listenSocket.close();
+            }
+
+        }
+    }
+}
+
+class Connection extends Thread {
+
+    DataInputStream getSocket_in;
+    DataOutputStream getSocket_out;
+    DataInputStream sendSocket_in;
+    DataOutputStream sendSocket_out;
+    Socket recieveSocket;
+    Socket sendSocket;
+
+    public Connection(Socket getSocket, Socket sendSocket) throws Exception {
+        this.sendSocket = sendSocket;
+        this.recieveSocket = getSocket;
+        sendSocket_in = new DataInputStream(this.sendSocket.getInputStream());
+        sendSocket_out = new DataOutputStream(this.sendSocket.getOutputStream());
+        getSocket_in = new DataInputStream(this.recieveSocket.getInputStream());
+        getSocket_out = new DataOutputStream(this.recieveSocket.getOutputStream());
+        this.start();
+    }
+
+    public void run() {
+        try {
+            String data = getSocket_in.readUTF();
+            System.out.println("Recieved msg from " + recieveSocket.getInetAddress().toString() + ":" + recieveSocket.getPort());
+            System.out.println("Message recieved: " + data);
+            
+            System.out.println("Forwarding message...");
+            sendSocket_out.writeUTF("Forward: " + data);
+            Thread.sleep(2000);
+            System.out.println("Message is forwarded to " + sendSocket.getInetAddress() + ":" + sendSocket.getPort());
+            String backData = sendSocket_in.readUTF();
+            Thread.sleep(2000);
+            System.out.println("Message recieved from forwarded host: " + backData);
+            getSocket_out.writeUTF(backData);
+            Thread.sleep(2000);
+            System.out.println("All done!");
+        } catch (Exception e) {
+            System.out.println("Connection dead: " + e.getMessage());
+        } finally {
+            try {
+                sendSocket.close();
+            } catch (IOException e) {
+                System.out.println("Close failed: " + e.getMessage());
+            }
+        }
+    }
 }
