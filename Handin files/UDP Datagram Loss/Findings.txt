@@ -1,0 +1,51 @@
+The program DL_UDPServer takes as input:
+Args[0]: (double) Datagram size
+Args[1]: (int) Number of datagrams sent
+Args[2]: (int) Interval between transmissions in milliseconds
+Args[3]: (int) The number of seconds before the Server will not wait for any more messages.
+
+The Client program DL_UDPClient is a program created to test the Server. 
+It takes as input the number of messages to send, and the interval in milliseconds to wait.
+Optimally, both would also have taken addresses and ports as input.
+
+The following are the results from the tests where sending 100.000 packets.
+
+1. Local connection on single machine:
+
+	Case:
+	Interval between transmissions: 0 ms
+	Lost messages: 404, Percentage: 0.404%
+	Dublicated messages: 0, Percentage: 0.0%
+	
+	Case:
+	Interval between transmissions: 1 ms
+	Lost messages: 0, Percentage: 0.0%
+	Dublicated messages: 0, Percentage: 0.0%
+
+2. Wifi: It lowers packet loss when there is a time interval between the transmissions.
+	Case 1:
+	Interval between transmissions: 0 ms
+	Lost messages: 97650, Percentage: 97.65%
+	Dublicated messages: 0, Percentage: 0.0%
+	
+	Case 2:
+	Interval between transmissions: 1 ms
+	Lost messages: 2, Percentage: 0.002%
+	Dublicated messages: 0, Percentage: 0.0%
+
+3. Ethernet:
+	
+	Case 1:
+	Interval between transmissions: 0 ms
+	Lost messages: 75377, Percentage: 75.377%
+	Dublicated messages: 0, Percentage: 0.0%
+	
+	Case 2:
+	Interval between transmissions: 1 ms
+	Lost messages: 0, Percentage: 0.0%
+	Dublicated messages: 0, Percentage: 0.0%
+
+4. Internet:
+	It seems that it is not possible to test on the ITU network, 
+	when having to go through the NAT. It this is not true, we are very interested in
+	the solution.
