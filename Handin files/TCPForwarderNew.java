@@ -63,9 +63,9 @@ class Connection extends Thread {
             System.out.println("Message recieved from forwarded host: " + backData);
             getSocket_out.writeUTF(backData);
             Thread.sleep(2000);
-            System.out.println("All doen pls.");
+            System.out.println("All done!");
         } catch (Exception e) {
-            System.out.println("Connection ded pls: " + e.getMessage());
+            System.out.println("Connection dead: " + e.getMessage());
         } finally {
             try {
                 sendSocket.close();
