@@ -27,7 +27,7 @@ public class SyncedArray {
 	}
 	
 	public synchronized ArrayList<String> getAll(){
-		ArrayList<String> newArray = new ArrayList<>(myArray);
+		ArrayList<String> newArray = new ArrayList<String>(myArray);
 		return newArray;
 	}
 }

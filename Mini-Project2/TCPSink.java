@@ -5,7 +5,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
-public class TCPClient {
+public class TCPSink {
 	
 	static int port;
 	
@@ -25,7 +25,6 @@ public class TCPClient {
         		exitSink(listening);
         		
         	}
-        	
         }
 		
 		

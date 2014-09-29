@@ -20,32 +20,26 @@ public class TCPServer {
 					ServerSocket listenSocket = new ServerSocket(serverPort);
 					while(true) {
 						Socket clientSocket = listenSocket.accept();
-						ListForConnections c = new ListForConnections(clientSocket, sinks);
+						ListenForConnections c = new ListenForConnections(clientSocket, sinks);
 					}
-				} catch(IOException e) {System.out.println("Listen :"+e.getMessage());}
+				} catch(IOException e) {
+					//Do nothing. It catches this exception every time a source writes.
+					//Optimally, it should be handled differently. 
+					//However, we chose to make the thread catch it, to make it simple.
+				}
 			}
 		});
 		
 		t.start();
 		
 		Scanner sc = new Scanner(System.in);
-        System.out.println("Printing the file passed in:");
+        System.out.println("This is the centered Server forwarding messages from clients to sources.");
         while(sc.hasNextLine()) {
         	String next = sc.nextLine();
         	ArrayList<String> array = sinks.getAll();
         	sendToAllSinks(array, next);
         	
         }
-		
-		
-//		try{
-//			int serverPort = 7896;
-//			ServerSocket listenSocket = new ServerSocket(serverPort);
-//			while(true) {
-//				Socket clientSocket = listenSocket.accept();
-//				Connection c = new Connection(clientSocket);
-//			}
-//		} catch(IOException e) {System.out.println("Listen :"+e.getMessage());}
 	}
 
 	public static void sendToAllSinks(ArrayList<String> array, String next) {
@@ -96,13 +90,13 @@ class SendMessage extends Thread {
 	}
 }
 
-class ListForConnections extends Thread {
+class ListenForConnections extends Thread {
 	DataInputStream in;
 	DataOutputStream out;
 	Socket clientSocket;
 	SyncedArray myS;
 	
-	public ListForConnections (Socket aClientSocket, SyncedArray sink) {
+	public ListenForConnections (Socket aClientSocket, SyncedArray sink) {
 		try {
 			myS = sink;
 			clientSocket = aClientSocket;
@@ -114,23 +108,32 @@ class ListForConnections extends Thread {
 	public void run(){
 		try { // an echo server
 			String data = in.readUTF();
-			System.out.println("Data: "+ data);
-			System.out.println("port: "+clientSocket.getPort());
-			ArrayList<String> array = myS.getAll();
+			ArrayList<String> arraySinks = myS.getAll();
 			switch(data){
 			case("enterSink"):
 				myS.add(String.valueOf(clientSocket.getPort()));
 				out.writeUTF("" + clientSocket.getPort());
-	        	TCPServer.sendToAllSinks(array, "Sink entered on port "+ clientSocket.getPort());
+	        	TCPServer.sendToAllSinks(arraySinks, "Sink entered on port "+ clientSocket.getPort());
 				break;
 			case("exitSink"):
 				String currentPort = in.readUTF();
 				myS.remove(currentPort);
-	        	TCPServer.sendToAllSinks(array, "Sink exited from port "+ currentPort);
+	        	TCPServer.sendToAllSinks(arraySinks, "Sink exited from port "+ currentPort);
 				break;
-			case("enterSource"):
+			case("enterSrc"):
+//				mySrc.add(String.valueOf(clientSocket.getPort()));
+				TCPServer.sendToAllSinks(arraySinks, "Source entered on port "+ clientSocket.getPort());
+				while(true){
+					int currentPort2 = clientSocket.getPort();
+					String message = in.readUTF();
+					if (message.equalsIgnoreCase("exit")) {
+						TCPServer.sendToAllSinks(myS.getAll(), "Source exited from port "+ currentPort2);
+						break;
+					}
+					TCPServer.sendToAllSinks(myS.getAll(), "Source ("+currentPort2+") says: "+ message);
+				}
 				break;
-			case("exitSource"):
+			default:
 				break;
 			}
 			//out.writeUTF(data);
@@ -139,4 +142,6 @@ class ListForConnections extends Thread {
 		} finally { try {clientSocket.close();}catch (IOException e){/*close failed*/}
 		}
 	}
+	
 }
+
