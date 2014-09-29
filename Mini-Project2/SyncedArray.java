@@ -1,5 +1,3 @@
-//package MiniProject2;
-
 import java.util.ArrayList;
 
 public class SyncedArray {

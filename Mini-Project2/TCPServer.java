@@ -1,5 +1,3 @@
-//package MiniProject2;
-
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -32,14 +30,6 @@ public class TCPServer {
 		
 		t.start();
 		
-		Scanner sc = new Scanner(System.in);
-        System.out.println("This is the centered Server forwarding messages from clients to sources.");
-        while(sc.hasNextLine()) {
-        	String next = sc.nextLine();
-        	ArrayList<String> array = sinks.getAll();
-        	sendToAllSinks(array, next);
-        	
-        }
 	}
 
 	public static void sendToAllSinks(ArrayList<String> array, String next) {

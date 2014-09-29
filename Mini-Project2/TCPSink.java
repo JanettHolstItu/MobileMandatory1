@@ -1,5 +1,3 @@
-//package MiniProject2;
-
 import java.net.*;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
