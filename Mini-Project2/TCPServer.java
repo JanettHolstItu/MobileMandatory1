@@ -33,22 +33,8 @@ public class TCPServer {
         while(sc.hasNextLine()) {
         	String next = sc.nextLine();
         	ArrayList<String> array = sinks.getAll();
-        	for (String s: array){
-        		final int currentPort = Integer.parseInt(s);
-    			Socket socket;
-				try {
-					socket = new Socket("localhost", currentPort);
-					SendMessage s1 = new SendMessage(socket, next);
-					System.out.println("Sent message to "+ currentPort);
-				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-    			
-        	}
+        	sendToAllSinks(array, next);
+        	
         }
 		
 		
@@ -60,6 +46,25 @@ public class TCPServer {
 //				Connection c = new Connection(clientSocket);
 //			}
 //		} catch(IOException e) {System.out.println("Listen :"+e.getMessage());}
+	}
+
+	public static void sendToAllSinks(ArrayList<String> array, String next) {
+		for (String s: array){
+    		final int currentPort = Integer.parseInt(s);
+			Socket socket;
+			try {
+				socket = new Socket("localhost", currentPort);
+				SendMessage s1 = new SendMessage(socket, next);
+				System.out.println("Sent message to "+ currentPort);
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+    	}
 	}
 }
 class SendMessage extends Thread {
@@ -111,13 +116,17 @@ class ListForConnections extends Thread {
 			String data = in.readUTF();
 			System.out.println("Data: "+ data);
 			System.out.println("port: "+clientSocket.getPort());
+			ArrayList<String> array = myS.getAll();
 			switch(data){
 			case("enterSink"):
 				myS.add(String.valueOf(clientSocket.getPort()));
 				out.writeUTF("" + clientSocket.getPort());
+	        	TCPServer.sendToAllSinks(array, "Sink entered on port "+ clientSocket.getPort());
 				break;
 			case("exitSink"):
-				myS.remove("registered");
+				String currentPort = in.readUTF();
+				myS.remove(currentPort);
+	        	TCPServer.sendToAllSinks(array, "Sink exited from port "+ currentPort);
 				break;
 			case("enterSource"):
 				break;

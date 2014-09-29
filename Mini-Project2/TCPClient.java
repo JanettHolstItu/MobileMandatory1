@@ -1,6 +1,9 @@
 //package MiniProject2;
 
 import java.net.*;
+import java.nio.channels.ClosedByInterruptException;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.io.*;
 public class TCPClient {
 	
@@ -8,12 +11,47 @@ public class TCPClient {
 	
 	public static void main (String args[]) {
 		// arguments supply message and hostname of destination
-		port = 0;
+		System.out.println("Use keywords 'Enter' and 'Exit'.");
+		Scanner sc = new Scanner(System.in);
 		
-		enterSink();
+		port = 0;
+		Thread listening = new Thread();
+        
+        while(sc.hasNextLine()) {
+        	String next = sc.nextLine();
+        	if (next.equalsIgnoreCase("Enter")){
+        		listening = enterSink();
+        	} else if (next.equalsIgnoreCase("Exit")){
+        		exitSink(listening);
+        		
+        	}
+        	
+        }
+		
+		
+		
 	}
 
-	private static void enterSink() {
+	private static void exitSink(Thread listening) {
+		listening.interrupt();
+		
+		Socket s = null;
+		try{
+			int serverPort = 7896;
+			s = new Socket("localhost", serverPort);
+			DataInputStream in = new DataInputStream( s.getInputStream());
+			DataOutputStream out = new DataOutputStream( s.getOutputStream());
+			out.writeUTF("exitSink"); // UTF is a string encoding; see Sec 4.3
+			out.writeUTF(String.valueOf(port)); // UTF is a string encoding; see Sec 4.3
+		} catch (UnknownHostException e){
+			System.out.println("Sock:"+e.getMessage());
+		} catch (EOFException e){System.out.println("EOF:"+e.getMessage());
+		} catch (IOException e){System.out.println("IO:"+e.getMessage());
+		} finally {if(s!=null) try {
+			s.close();}catch (IOException e){/*close failed*/}}
+	}
+
+	private static Thread enterSink() {
 		Socket s = null;
 		try{
 			int serverPort = 7896;
@@ -23,7 +61,6 @@ public class TCPClient {
 			out.writeUTF("enterSink"); // UTF is a string encoding; see Sec 4.3
 			String data = in.readUTF();
 			port = Integer.parseInt(data);
-			System.out.println("Port: "+ port);
 		}catch (UnknownHostException e){
 			System.out.println("Sock:"+e.getMessage());
 		} catch (EOFException e){System.out.println("EOF:"+e.getMessage());
@@ -31,12 +68,12 @@ public class TCPClient {
 		} finally {if(s!=null) try {
 			s.close();}catch (IOException e){/*close failed*/}}
 		
-		startListening(port);
+		Thread listeningThread = startListening(port);
+		return listeningThread;
 	}
 
-	private static void startListening(int p) {
+	private static Thread startListening(int p) {
 		final int port = p;
-		System.out.println("started listening with port "+port);
 		Thread t = new Thread(new Runnable(){
 			@Override
 			public void run(){
@@ -47,11 +84,18 @@ public class TCPClient {
 						Socket clientSocket = listenSocket.accept();
 						MakeConnection c = new MakeConnection(clientSocket);
 					}
-				} catch(IOException e) {System.out.println("Listen :"+e.getMessage());}
+				} 
+				catch(ClosedByInterruptException e){
+					System.out.println("Stopped Listening.");
+				}
+				catch(IOException e) {
+					System.out.println("Listen :"+e.getMessage());
+				}
 			}
 		});
 		
 		t.start();
+		return t;
 	}
 }
 
