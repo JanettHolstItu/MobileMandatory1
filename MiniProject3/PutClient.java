@@ -1,5 +1,3 @@
-//package MiniProject3;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -33,29 +31,20 @@ public class PutClient {
 						value = strings[3];
 						if (value.contains("'")) value = value.replace("'", "");
 						if (value.contains(appos)) value = value.replace(appos, "");
-						System.out.println("The value is " + value);
 						SendMessage m = new SendMessage(port, key, value);
-						System.out.println("Sending message...");
 						m.join();
-						System.out.println("Message sent");
 						System.exit(0);
 					}
 					else if (input.contains(appos)){
 						value = input.split(appos)[1];
-						System.out.println("The value is " + value);
 						SendMessage m = new SendMessage(port, key, value);
-						System.out.println("Sending message...");
 						m.join();
-						System.out.println("Message sent");
 						System.exit(0);
 					}
 					else if (input.contains("'")) {
 						value = input.split("'")[1];
-						System.out.println("The value is " + value);
 						SendMessage m = new SendMessage(port, key, value);
-						System.out.println("Sending message...");
 						m.join();
-						System.out.println("Message sent");
 						System.exit(0);
 					}
 					else

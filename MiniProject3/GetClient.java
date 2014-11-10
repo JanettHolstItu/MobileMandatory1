@@ -1,5 +1,3 @@
-//package MiniProject3;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -84,45 +82,6 @@ public class GetClient {
 		
 	}
 	
-	
-//	//firstPort, ip, key
-//	public GetClient(int f, int p, int s){
-//		this.firstPort = f;
-//		this.key = s;
-//		this.port = p;
-//		this.executorService = Executors.newSingleThreadExecutor();
-//		
-//		//If not firstPort = thisPort <-- happens in Node.
-//		String message = "GET("+key+","+firstPort+")";
-//		SendMessageAndListen s2 = new SendMessageAndListen(port, message);
-//		//send GET(firstPort, Key)
-//		
-//		this.future = executorService.submit(s2);
-//		
-//		
-//	}
-//	
-//	public String getResult(){
-//		try {
-//		    // Real life code should define the timeout as a constant or
-//		    // retrieve it from configuration
-//		    String result = future.get(5, TimeUnit.SECONDS);
-//		    if (result != null)
-//		    	return result;
-//		    // Do something with the result
-//		} catch (TimeoutException e) {
-//		    future.cancel(true);
-//		    System.out.println("...Timed out.");
-//		    // Perform other error handling, e.g. logging, throwing an exception
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return null;
-//	}
 	
 	static class SendMessageAndListen implements Callable<String>{
 		int port;
